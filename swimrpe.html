@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwimRPE - 수영 강도 측정 앱 v1.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #06b6d4;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --background: #fafbff;
+            --surface: #ffffff;
+            --surface-alt: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --radius: 16px;
+            --radius-sm: 8px;
+            --radius-lg: 24px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--background) 0%, #e0f2fe 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 430px;
+            margin: 0 auto;
+            background: var(--surface);
+            min-height: 100vh;
+            position: relative;
+            box-shadow: var(--shadow-xl);
+            overflow-x: hidden;
+        }
+
+        /* 헤더 */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 60px 24px 40px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.2) 0%, transparent 50%);
+        }
+
+        .app-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+            letter-spacing: -0.5px;
+        }
+
+        .app-header p {
+            font-size: 16px;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+        }
+
+        /* 메인 컨텐츠 */
+        .main-content {
+            padding: 32px 24px 120px;
+        }
+
+        /* 카드 */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 32px 28px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .card h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+        }
+
+        .card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        /* 온보딩 섹션 */
+        .onboarding-section {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            border: 2px solid var(--primary);
+        }
+
+        .onboarding-section::before {
+            background: var(--primary);
+        }
+
+        .feature-grid {
+            display: grid;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: var(--radius);
+            gap: 16px;
+        }
+
+        .feature-icon {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .feature-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .feature-content p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* 탭 네비게이션 */
+        .tab-navigation {
+            display: flex;
+            background: var(--surface-alt);
+            border-radius: var(--radius);
+            padding: 6px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 16px 8px;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            position: relative;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 탭 컨텐츠 */
+        .tab-content {
+            display: none;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 통계 그리드 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 28px 24px;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            transform: rotate(45deg);
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 수영 특화 섹션 */
+        .swimming-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid var(--info);
+        }
+
+        .swimming-section::before {
+            background: var(--info);
+        }
+
+        .stroke-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .stroke-item {
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            background: var(--surface);
+        }
+
+        .stroke-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .stroke-item.selected {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .stroke-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .session-type-selector {
+            display: flex;
+            gap: 12px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+
+        .session-type-item {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            background: var(--surface);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .session-type-item:hover {
+            border-color: var(--secondary);
+        }
+
+        .session-type-item.selected {
+            border-color: var(--secondary);
+            background: var(--secondary);
+            color: white;
+        }
+
+        /* RPE 척도 */
+        .rpe-scale {
+            display: grid;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .rpe-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--surface);
+            position: relative;
+        }
+
+        .rpe-item:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .rpe-item.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            transform: scale(1.02);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .rpe-number {
+            font-size: 28px;
+            font-weight: 800;
+            min-width: 50px;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rpe-description {
+            flex: 1;
+        }
+
+        .rpe-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .rpe-detail {
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .rpe-swimming-tip {
+            font-size: 13px;
+            opacity: 0.7;
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        /* 폼 요소 */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--surface);
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        /* 버튼 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 32px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--surface-alt);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-light);
+            border-color: var(--primary);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* 피드백 시스템 */
+        .feedback-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            border: 2px solid var(--warning);
+        }
+
+        .feedback-section::before {
+            background: var(--warning);
+        }
+
+        .feedback-quick {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .feedback-item {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            background: var(--surface);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .feedback-item:hover {
+            border-color: var(--warning);
+        }
+
+        .feedback-item.selected {
+            border-color: var(--warning);
+            background: var(--warning);
+            color: white;
+        }
+
+        /* 기록 아이템 */
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 24px;
+            background: var(--surface-alt);
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .record-item:hover {
+            background: var(--border-light);
+            transform: translateX(4px);
+        }
+
+        .record-info {
+            flex: 1;
+        }
+
+        .record-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .record-info p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .record-tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .record-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .record-rpe {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            min-width: 70px;
+            text-align: center;
+        }
+
+        /* 상태 메시지 */
+        .status-message {
+            margin-top: 20px;
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            text-align: center;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .status-loading {
+            background: #e0f2fe;
+            color: #0e7490;
+            border: 1px solid #bae6fd;
+        }
+
+        /* 빈 상태 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+
+        /* 하단 네비게이션 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            padding: 16px 20px 20px;
+            z-index: 1000;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            border-radius: var(--radius);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            background: rgba(14, 165, 233, 0.1);
+        }
+
+        .nav-icon {
+            width: 28px;
+            height: 28px;
+            margin-bottom: 6px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* 로딩 애니메이션 */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f4f6;
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 반응형 */
+        @media (max-width: 480px) {
+            .app-container {
+                max-width: 100%;
+            }
+            
+            .main-content {
+                padding: 24px 16px 120px;
+            }
+            
+            .card {
+                padding: 24px 20px;
+                margin-bottom: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .stroke-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .session-type-selector {
+                flex-direction: column;
+            }
+
+            .session-type-item {
+                flex: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>SwimRPE</h1>
+            <p>수영 강도를 과학적으로 측정하고 기록하세요</p>
+        </header>
+
+        <main class="main-content">
+            <!-- 온보딩/교육 탭 -->
+            <div id="guide-tab" class="tab-content active">
+                <div class="card onboarding-section">
+                    <h2>수영과 RPE 측정의 과학</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6;">
+                        RPE(Rating of Perceived Exertion)는 1960년대 스웨덴의 운동생리학자 Gunnar Borg가 개발한 
+                        <strong>과학적으로 검증된</strong> 운동강도 측정 방법입니다. 특히 수영에서는 심박수 측정이 
+                        어려운 수중 환경의 특성상 RPE가 더욱 중요한 의미를 갖습니다.
+                    </p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <div class="feature-icon">🧬</div>
+                            <div class="feature-content">
+                                <h4>생리학적 정확성</h4>
+                                <p>RPE는 실제 심박수, 젖산 농도와 95% 이상의 높은 상관관계를 보입니다. 수영 시 체감 강도가 실제 운동 부하를 정확히 반영합니다.</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">🏊</div>
+                            <div class="feature-content">
+                                <h4>수영 특화 측정</h4>
+                                <p>물의 저항과 부력으로 인해 수영은 독특한 운동 환경을 제공합니다. RPE는 이러한 수중 환경에서 가장 신뢰할 수 있는 강도 지표입니다.</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">📊</div>
+                            <div class="feature-content">
+                                <h4>성과 향상 도구</h4>
+                                <p>동일한 거리를 수영할 때 RPE가 점진적으로 감소한다면, 이는 수영 실력과 체력이 향상되었다는 객관적 증거입니다.</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">⚠️</div>
+                            <div class="feature-content">
+                                <h4>부상 예방</h4>
+                                <p>과도한 훈련 강도를 조기에 감지하여 어깨 부상, 과훈련 증후군 등 수영 관련 부상을 예방할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 32px; padding: 20px; background: rgba(59, 130, 246, 0.1); border-radius: var(--radius); border-left: 4px solid var(--info);">
+                        <h4 style="color: var(--info); margin-bottom: 12px;">왜 매일 기록해야 할까요?</h4>
+                        <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+                            수영 실력 향상과 건강 관리를 위해서는 <strong>일관된 데이터 축적</strong>이 필수입니다. 
+                            매일의 RPE 기록은 개인의 운동 패턴을 파악하고, 최적의 훈련 강도를 찾아내며, 
+                            기록 단축을 위한 과학적 근거를 제공합니다. 단 2주만 꾸준히 기록해도 놀라운 인사이트를 얻을 수 있습니다!
+                        </p>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="switchTab('home')" style="margin-top: 24px;">
+                        시작하기 - 나의 수영 여정을 기록해보세요
+                    </button>
+                </div>
+            </div>
+
+            <!-- 홈 대시보드 -->
+            <div id="home-tab" class="tab-content">
+                <div class="tab-navigation">
+                    <button class="tab-btn active" onclick="switchSubTab('dashboard')">대시보드</button>
+                    <button class="tab-btn" onclick="switchSubTab('guide')">RPE 가이드</button>
+                </div>
+
+                <div id="dashboard-subtab" class="subtab-content">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="today-avg-rpe">0</div>
+                            <div class="stat-label">오늘 평균 RPE</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="today-sessions">0</div>
+                            <div class="stat-label">오늘 수영 세션</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="weekly-consistency">0%</div>
+                            <div class="stat-label">주간 일관성</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="streak-days">0일</div>
+                            <div class="stat-label">연속 기록</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>최근 수영 기록</h3>
+                        <div id="recent-records">
+                            <div class="status-loading">
+                                <div class="loading-spinner"></div>
+                                최근 기록을 불러오는 중...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="guide-subtab" class="subtab-content" style="display: none;">
+                    <div class="card swimming-section">
+                        <h3>수영 RPE 척도 가이드</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                            수영 환경에 특화된 RPE 척도입니다. 각 강도별로 수영 상황에 맞는 설명을 참고하세요.
+                        </p>
+                        <div id="guide-rpe-scale">
+                            <!-- JavaScript로 동적 생성 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 운동 기록 입력 -->
+            <div id="input-tab" class="tab-content">
+                <div class="card swimming-section">
+                    <h2>수영 세션 기록</h2>
+                    
+                    <form id="swimming-form">
+                        <div class="form-group">
+                            <label class="form-label">수영 영법</label>
+                            <div class="stroke-selector" id="stroke-selector">
+                                <div class="stroke-item" data-stroke="자유형">
+                                    <div class="stroke-name">자유형</div>
+                                </div>
+                                <div class="stroke-item" data-stroke="배영">
+                                    <div class="stroke-name">배영</div>
+                                </div>
+                                <div class="stroke-item" data-stroke="평영">
+                                    <div class="stroke-name">평영</div>
+                                </div>
+                                <div class="stroke-item" data-stroke="접영">
+                                    <div class="stroke-name">접영</div>
+                                </div>
+                                <div class="stroke-item" data-stroke="혼영">
+                                    <div class="stroke-name">혼영</div>
+                                </div>
+                                <div class="stroke-item" data-stroke="기타">
+                                    <div class="stroke-name">기타</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">세션 유형</label>
+                            <div class="session-type-selector" id="session-type-selector">
+                                <div class="session-type-item" data-session="웜업">웜업</div>
+                                <div class="session-type-item" data-session="메인">메인 세트</div>
+                                <div class="session-type-item" data-session="쿨다운">쿨다운</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">운동 날짜</label>
+                            <input type="date" id="swim-date" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">수영 거리 (선택사항)</label>
+                            <input type="number" id="swim-distance" class="form-input" placeholder="미터 단위로 입력 (예: 1000)">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">운동 시간대</label>
+                            <select id="swim-time" class="form-input" required>
+                                <option value="">시간대를 선택해주세요</option>
+                                <option value="새벽">새벽 (05:00-08:00)</option>
+                                <option value="오전">오전 (08:00-12:00)</option>
+                                <option value="오후">오후 (12:00-18:00)</option>
+                                <option value="저녁">저녁 (18:00-22:00)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">RPE 강도 선택</label>
+                            <div class="rpe-selector">
+                                <div class="rpe-scale" id="rpe-scale">
+                                    <!-- JavaScript로 동적 생성 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">수영 메모 (선택사항)</label>
+                            <textarea id="swim-memo" class="form-input form-textarea" 
+                                      placeholder="오늘 수영에 대한 느낌, 물 상태, 컨디션 등을 자유롭게 기록해보세요"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-full">
+                            수영 기록 저장하기
+                        </button>
+                    </form>
+
+                    <div id="input-status"></div>
+                </div>
+
+                <!-- 피드백 수집 -->
+                <div class="card feedback-section">
+                    <h3>빠른 피드백</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                        방금 입력하신 RPE가 실제 느낀 강도와 얼마나 일치했나요?
+                    </p>
+                    <div class="feedback-quick" id="feedback-selector">
+                        <div class="feedback-item" data-feedback="perfect">완벽 일치</div>
+                        <div class="feedback-item" data-feedback="good">거의 맞음</div>
+                        <div class="feedback-item" data-feedback="okay">보통</div>
+                        <div class="feedback-item" data-feedback="off">좀 다름</div>
+                    </div>
+                    <div id="feedback-status"></div>
+                </div>
+            </div>
+
+            <!-- 기록 조회 -->
+            <div id="records-tab" class="tab-content">
+                <div class="card">
+                    <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <input type="text" id="search-records" class="form-input" 
+                               placeholder="영법이나 메모로 검색..." style="flex: 2; min-width: 200px;">
+                        <select id="filter-stroke" class="form-input" style="flex: 1; min-width: 120px;">
+                            <option value="">전체 영법</option>
+                            <option value="자유형">자유형</option>
+                            <option value="배영">배영</option>
+                            <option value="평영">평영</option>
+                            <option value="접영">접영</option>
+                            <option value="혼영">혼영</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="records-list">
+                    <div class="status-loading">
+                        <div class="loading-spinner"></div>
+                        수영 기록을 불러오는 중...
+                    </div>
+                </div>
+            </div>
+
+            <!-- 통계 분석 -->
+            <div id="stats-tab" class="tab-content">
+                <div class="card">
+                    <h3>수영 분석</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-sessions">0</div>
+                            <div class="stat-label">총 수영 세션</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avg-rpe-all">0</div>
+                            <div class="stat-label">전체 평균 RPE</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="favorite-stroke">-</div>
+                            <div class="stat-label">선호 영법</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="best-time">-</div>
+                            <div class="stat-label">최적 시간대</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>영법별 RPE 분포</h3>
+                    <div id="stroke-distribution"></div>
+                </div>
+
+                <div class="card">
+                    <h3>시간대별 수영 패턴</h3>
+                    <div id="time-distribution"></div>
+                </div>
+
+                <div class="card">
+                    <h3>시스템 상태</h3>
+                    <button class="btn btn-secondary btn-full" onclick="checkServerHealth()">
+                        서버 연결 상태 확인
+                    </button>
+                    <div id="server-status"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 하단 네비게이션 -->
+        <nav class="bottom-nav">
+            <div class="nav-tabs">
+                <button class="nav-tab" onclick="switchTab('guide')">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    가이드
+                </button>
+                <button class="nav-tab active" onclick="switchTab('home')">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    홈
+                </button>
+                <button class="nav-tab" onclick="switchTab('input')">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    기록
+                </button>
+                <button class="nav-tab" onclick="switchTab('records')">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    목록
+                </button>
+                <button class="nav-tab" onclick="switchTab('stats')">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    통계
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        // 전역 변수
+        let allRecords = [];
+        let selectedRPE = null;
+        let selectedStroke = null;
+        let selectedSessionType = null;
+        let userFeedback = {};
+        
+        // 수영 특화 RPE 척도 데이터
+        const SWIMMING_RPE_SCALE = [
+            { 
+                value: 0, 
+                title: "완전 휴식", 
+                description: "풀사이드에 앉아 있는 상태, 물에 들어가기 전", 
+                swimmingTip: "워밍업 전 상태" 
+            },
+            { 
+                value: 1, 
+                title: "매우 가볍게", 
+                description: "물에 둥둥 떠있거나 매우 천천히 움직이는 정도", 
+                swimmingTip: "물 적응이나 쿨다운 단계" 
+            },
+            { 
+                value: 2, 
+                title: "가볍게", 
+                description: "편안한 워밍업 수영, 호흡이 전혀 힘들지 않음", 
+                swimmingTip: "워밍업 초기, 자유형으로 천천히" 
+            },
+            { 
+                value: 3, 
+                title: "보통", 
+                description: "편안한 페이스, 대화가 가능할 정도의 강도", 
+                swimmingTip: "기본 유산소 구간, 롱 디스턴스 수영" 
+            },
+            { 
+                value: 4, 
+                title: "약간 힘들게", 
+                description: "호흡이 약간 빨라지기 시작, 하지만 여전히 편안함", 
+                swimmingTip: "지구력 훈련, 중거리 지속 수영" 
+            },
+            { 
+                value: 5, 
+                title: "힘들게", 
+                description: "호흡이 깊어지고 빨라짐, 근육에서 약간의 피로감", 
+                swimmingTip: "템포 트레이닝, 메인 세트 시작" 
+            },
+            { 
+                value: 6, 
+                title: "더 힘들게", 
+                description: "호흡이 힘들어지고 근육 피로감 증가", 
+                swimmingTip: "인터벌 트레이닝 중간 강도" 
+            },
+            { 
+                value: 7, 
+                title: "매우 힘들게", 
+                description: "호흡이 매우 거칠어지고 근육에 젖산 축적 느낌", 
+                swimmingTip: "고강도 인터벌, 스프린트 훈련" 
+            },
+            { 
+                value: 8, 
+                title: "거의 최대", 
+                description: "숨이 매우 가쁘고 근육이 타는 듯한 느낌", 
+                swimmingTip: "최대 스프린트에 가까운 강도" 
+            },
+            { 
+                value: 9, 
+                title: "매우 매우 힘들게", 
+                description: "거의 한계에 가까움, 몇 미터 더만 가능", 
+                swimmingTip: "올아웃 스프린트 막판" 
+            },
+            { 
+                value: 10, 
+                title: "최대 강도", 
+                description: "더 이상 한 스트로크도 할 수 없는 상태", 
+                swimmingTip: "25m/50m 최대 스프린트 피니시" 
+            }
+        ];
+
+        // 로컬 스토리지 관리
+        class LocalStorage {
+            static getRecords() {
+                const records = localStorage.getItem('swimrpe_records');
+                return records ? JSON.parse(records) : [];
+            }
+
+            static saveRecord(record) {
+                const records = this.getRecords();
+                record.id = Date.now();
+                record.created_at = new Date().toISOString();
+                records.unshift(record);
+                localStorage.setItem('swimrpe_records', JSON.stringify(records));
+                return record;
+            }
+
+            static getFeedback() {
+                const feedback = localStorage.getItem('swimrpe_feedback');
+                return feedback ? JSON.parse(feedback) : {};
+            }
+
+            static saveFeedback(feedback) {
+                localStorage.setItem('swimrpe_feedback', JSON.stringify(feedback));
+            }
+        }
+
+        // 앱 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            // 오늘 날짜 설정
+            document.getElementById('swim-date').value = new Date().toISOString().split('T')[0];
+            
+            // RPE 척도 생성
+            createRPEScale();
+            createGuideRPEScale();
+            
+            // 이벤트 리스너 설정
+            setupEventListeners();
+            
+            // 초기 데이터 로드
+            loadDashboardData();
+            
+            // 사용자 ID 설정 (임시)
+            window.currentUserId = 1;
+            
+            console.log('SwimRPE 앱이 초기화되었습니다.');
+        }
+
+        function createRPEScale() {
+            const container = document.getElementById('rpe-scale');
+            container.innerHTML = SWIMMING_RPE_SCALE.map(rpe => `
+                <div class="rpe-item" data-rpe="${rpe.value}" onclick="selectRPE(${rpe.value})">
+                    <div class="rpe-number">${rpe.value}</div>
+                    <div class="rpe-description">
+                        <div class="rpe-title">${rpe.title}</div>
+                        <div class="rpe-detail">${rpe.description}</div>
+                        <div class="rpe-swimming-tip">${rpe.swimmingTip}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createGuideRPEScale() {
+            const container = document.getElementById('guide-rpe-scale');
+            container.innerHTML = SWIMMING_RPE_SCALE.map(rpe => `
+                <div class="rpe-item">
+                    <div class="rpe-number">${rpe.value}</div>
+                    <div class="rpe-description">
+                        <div class="rpe-title">${rpe.title}</div>
+                        <div class="rpe-detail">${rpe.description}</div>
+                        <div class="rpe-swimming-tip">${rpe.swimmingTip}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectRPE(value) {
+            // 이전 선택 제거
+            document.querySelectorAll('.rpe-item[data-rpe]').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 새 선택 적용
+            const selectedItem = document.querySelector(`[data-rpe="${value}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('selected');
+                selectedRPE = value;
+            }
+        }
+
+        function setupEventListeners() {
+            // 수영 기록 폼 제출
+            document.getElementById('swimming-form').addEventListener('submit', handleSwimmingSubmit);
+            
+            // 영법 선택
+            document.querySelectorAll('.stroke-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.stroke-item').forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedStroke = this.dataset.stroke;
+                });
+            });
+            
+            // 세션 타입 선택
+            document.querySelectorAll('.session-type-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.session-type-item').forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedSessionType = this.dataset.session;
+                });
+            });
+            
+            // 피드백 선택
+            document.querySelectorAll('.feedback-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.feedback-item').forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+                    submitFeedback(this.dataset.feedback);
+                });
+            });
+            
+            // 검색 및 필터
+            document.getElementById('search-records').addEventListener('input', filterRecords);
+            document.getElementById('filter-stroke').addEventListener('change', filterRecords);
+        }
+
+        // 탭 전환
+        function switchTab(tabName) {
+            // 모든 탭 숨기기
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 모든 네비게이션 비활성화
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 선택된 탭 활성화
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.closest('.nav-tab').classList.add('active');
+            
+            // 탭별 데이터 로드
+            switch(tabName) {
+                case 'home':
+                    loadDashboardData();
+                    break;
+                case 'records':
+                    loadAllRecords();
+                    break;
+                case 'stats':
+                    loadStatistics();
+                    break;
+            }
+        }
+
+        // 서브탭 전환 (홈 탭 내부)
+        function switchSubTab(subtabName) {
+            // 서브탭 버튼 상태 변경
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 서브탭 컨텐츠 전환
+            document.querySelectorAll('.subtab-content').forEach(subtab => {
+                subtab.style.display = 'none';
+            });
+            document.getElementById(`${subtabName}-subtab`).style.display = 'block';
+        }
+
+        // 대시보드 데이터 로드
+        function loadDashboardData() {
+            const records = LocalStorage.getRecords();
+            updateDashboardStats(records);
+            displayRecentRecords(records.slice(0, 5));
+        }
+
+        // 대시보드 통계 업데이트
+        function updateDashboardStats(records) {
+            const today = new Date().toDateString();
+            const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            
+            const todayRecords = records.filter(r => 
+                new Date(r.date).toDateString() === today
+            );
+            
+            const weeklyRecords = records.filter(r => 
+                new Date(r.date) >= weekAgo
+            );
+            
+            // 오늘 평균 RPE
+            const todayAvgRPE = todayRecords.length > 0 
+                ? Math.round(todayRecords.reduce((sum, r) => sum + r.intensity, 0) / todayRecords.length * 10) / 10
+                : 0;
+            
+            // 주간 일관성 (운동한 날수 / 7일 * 100)
+            const weeklyDays = new Set(weeklyRecords.map(r => 
+                new Date(r.date).toDateString()
+            )).size;
+            const consistency = Math.round(weeklyDays / 7 * 100);
+            
+            // 연속 기록일 계산
+            const streakDays = calculateStreakDays(records);
+            
+            // DOM 업데이트
+            document.getElementById('today-avg-rpe').textContent = todayAvgRPE;
+            document.getElementById('today-sessions').textContent = todayRecords.length;
+            document.getElementById('weekly-consistency').textContent = consistency + '%';
+            document.getElementById('streak-days').textContent = streakDays + '일';
+        }
+
+        // 연속 기록일 계산
+        function calculateStreakDays(records) {
+            if (records.length === 0) return 0;
+            
+            const dates = [...new Set(records.map(r => 
+                new Date(r.date).toDateString()
+            ))].sort((a, b) => new Date(b) - new Date(a));
+            
+            let streak = 0;
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+            
+            // 오늘 또는 어제부터 시작하는지 확인
+            if (dates[0] === today || dates[0] === yesterday) {
+                streak = 1;
+                
+                for (let i = 1; i < dates.length; i++) {
+                    const currentDate = new Date(dates[i-1]);
+                    const nextDate = new Date(dates[i]);
+                    const daysDiff = (currentDate - nextDate) / (24 * 60 * 60 * 1000);
+                    
+                    if (daysDiff === 1) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            
+            return streak;
+        }
+
+        // 최근 기록 표시
+        function displayRecentRecords(records) {
+            const container = document.getElementById('recent-records');
+            
+            if (records.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>아직 수영 기록이 없습니다</h3>
+                        <p>첫 번째 수영 세션을 기록해보세요!</p>
+                        <button class="btn btn-primary" onclick="switchTab('input')">
+                            수영 기록하기
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = records.map(record => {
+                const strokeEmoji = getStrokeEmoji(record.exercise_type);
+                const sessionType = extractSessionType(record.memo || '');
+                
+                return `
+                    <div class="record-item">
+                        <div class="record-info">
+                            <h4>${strokeEmoji} ${record.exercise_type}</h4>
+                            <p>${formatDate(record.date)} ${record.time_of_day}</p>
+                            ${sessionType ? `<div class="record-tags"><span class="record-tag">${sessionType}</span></div>` : ''}
+                            ${record.memo ? `<p style="font-style: italic; margin-top: 8px; color: var(--text-secondary);">${record.memo}</p>` : ''}
+                        </div>
+                        <div class="record-rpe">RPE ${record.intensity}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 영법 이모지 반환
+        function getStrokeEmoji(exerciseType) {
+            const emojiMap = {
+                '자유형': '',
+                '배영': '', 
+                '평영': '',
+                '접영': '',
+                '혼영': '',
+                '기타': ''
+            };
+            return emojiMap[exerciseType] || '';
+        }
+
+        // 메모에서 세션 타입 추출
+        function extractSessionType(memo) {
+            if (memo.includes('웜업') || memo.includes('워밍업')) return '웜업';
+            if (memo.includes('메인') || memo.includes('메인세트')) return '메인 세트';
+            if (memo.includes('쿨다운') || memo.includes('정리')) return '쿨다운';
+            return null;
+        }
+
+        // 수영 기록 제출 처리
+        async function handleSwimmingSubmit(e) {
+            e.preventDefault();
+            
+            // 필수 선택사항 검증
+            if (!selectedStroke) {
+                showStatus('input-status', 'error', '수영 영법을 선택해주세요.');
+                return;
+            }
+            
+            if (!selectedSessionType) {
+                showStatus('input-status', 'error', '세션 유형을 선택해주세요.');
+                return;
+            }
+            
+            if (selectedRPE === null) {
+                showStatus('input-status', 'error', 'RPE 강도를 선택해주세요.');
+                return;
+            }
+            
+            showStatus('input-status', 'loading', '수영 기록을 저장하는 중...');
+            
+            const distance = document.getElementById('swim-distance').value;
+            const memo = document.getElementById('swim-memo').value;
+            
+            // 메모에 추가 정보 포함
+            const enrichedMemo = `${selectedSessionType}${distance ? ` | ${distance}m` : ''}${memo ? ` | ${memo}` : ''}`;
+            
+            const formData = {
+                user_id: window.currentUserId,
+                exercise_type: selectedStroke,
+                date: document.getElementById('swim-date').value,
+                time_of_day: document.getElementById('swim-time').value,
+                intensity: selectedRPE,
+                memo: enrichedMemo
+            };
+            
+            try {
+                // 로컬 스토리지에 저장
+                const savedRecord = LocalStorage.saveRecord(formData);
+                
+                showStatus('input-status', 'success', 
+                    `수영 기록이 저장되었습니다!\n${selectedStroke} (${selectedSessionType}) - RPE ${selectedRPE}`);
+                
+                // 폼 초기화
+                resetForm();
+                
+                // 대시보드 새로고침
+                setTimeout(() => {
+                    loadDashboardData();
+                }, 1000);
+                
+            } catch (error) {
+                showStatus('input-status', 'error', `저장 실패: ${error.message}`);
+            }
+        }
+
+        // 폼 초기화
+        function resetForm() {
+            document.getElementById('swimming-form').reset();
+            document.getElementById('swim-date').value = new Date().toISOString().split('T')[0];
+            
+            // 선택 상태 초기화
+            document.querySelectorAll('.stroke-item, .session-type-item, .rpe-item[data-rpe]').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            selectedRPE = null;
+            selectedStroke = null;
+            selectedSessionType = null;
+        }
+
+        // 피드백 제출
+        function submitFeedback(feedbackType) {
+            try {
+                // 로컬 스토리지에 피드백 저장
+                const feedback = LocalStorage.getFeedback();
+                feedback[new Date().toISOString()] = feedbackType;
+                LocalStorage.saveFeedback(feedback);
+                
+                showStatus('feedback-status', 'success', '소중한 피드백 감사합니다!');
+                
+                setTimeout(() => {
+                    document.getElementById('feedback-status').innerHTML = '';
+                }, 3000);
+                
+            } catch (error) {
+                showStatus('feedback-status', 'error', '피드백 전송에 실패했습니다.');
+            }
+        }
+
+        // 모든 기록 로드
+        function loadAllRecords() {
+            allRecords = LocalStorage.getRecords();
+            filterRecords();
+        }
+
+        // 기록 필터링
+        function filterRecords() {
+            const searchTerm = document.getElementById('search-records').value.toLowerCase();
+            const filterStroke = document.getElementById('filter-stroke').value;
+            
+            let filtered = allRecords.filter(record => {
+                const matchesSearch = searchTerm === '' || 
+                    record.exercise_type.toLowerCase().includes(searchTerm) ||
+                    (record.memo && record.memo.toLowerCase().includes(searchTerm));
+                
+                const matchesStroke = filterStroke === '' || record.exercise_type === filterStroke;
+                
+                return matchesSearch && matchesStroke;
+            });
+            
+            displayFilteredRecords(filtered);
+        }
+
+        // 필터링된 기록 표시
+        function displayFilteredRecords(records) {
+            const container = document.getElementById('records-list');
+            
+            if (records.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>해당하는 기록이 없습니다</h3>
+                        <p>검색어나 필터를 확인해보세요.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = records.map(record => {
+                const strokeEmoji = getStrokeEmoji(record.exercise_type);
+                const sessionType = extractSessionType(record.memo || '');
+                
+                return `
+                    <div class="card">
+                        <div class="record-item">
+                            <div class="record-info">
+                                <h4>${strokeEmoji} ${record.exercise_type}</h4>
+                                <p>${formatDate(record.date)} ${record.time_of_day}</p>
+                                ${sessionType ? `<div class="record-tags"><span class="record-tag">${sessionType}</span></div>` : ''}
+                                ${record.memo ? `<p style="margin-top: 12px; font-style: italic; color: var(--text-secondary);">${record.memo}</p>` : ''}
+                            </div>
+                            <div class="record-rpe">RPE ${record.intensity}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 통계 로드
+        function loadStatistics() {
+            const records = LocalStorage.getRecords();
+            updateStatistics(records);
+        }
+
+        // 통계 업데이트
+        function updateStatistics(records) {
+            if (records.length === 0) {
+                document.getElementById('total-sessions').textContent = '0';
+                document.getElementById('avg-rpe-all').textContent = '0';
+                document.getElementById('favorite-stroke').textContent = '-';
+                document.getElementById('best-time').textContent = '-';
+                return;
+            }
+            
+            // 기본 통계
+            const totalSessions = records.length;
+            const avgRPE = Math.round(records.reduce((sum, r) => sum + r.intensity, 0) / records.length * 10) / 10;
+            
+            // 선호 영법
+            const strokeCount = records.reduce((acc, record) => {
+                acc[record.exercise_type] = (acc[record.exercise_type] || 0) + 1;
+                return acc;
+            }, {});
+            const favoriteStroke = Object.keys(strokeCount).reduce((a, b) => 
+                strokeCount[a] > strokeCount[b] ? a : b, '-');
+            
+            // 최적 시간대
+            const timeCount = records.reduce((acc, record) => {
+                acc[record.time_of_day] = (acc[record.time_of_day] || 0) + 1;
+                return acc;
+            }, {});
+            const bestTime = Object.keys(timeCount).reduce((a, b) => 
+                timeCount[a] > timeCount[b] ? a : b, '-');
+            
+            document.getElementById('total-sessions').textContent = totalSessions;
+            document.getElementById('avg-rpe-all').textContent = avgRPE;
+            document.getElementById('favorite-stroke').textContent = favoriteStroke;
+            document.getElementById('best-time').textContent = bestTime;
+            
+            // 영법별 분포
+            displayDistribution('stroke-distribution', strokeCount);
+            
+            // 시간대별 분포
+            displayDistribution('time-distribution', timeCount);
+        }
+
+        // 분포 차트 표시
+        function displayDistribution(containerId, data) {
+            const container = document.getElementById(containerId);
+            const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+            
+            if (total === 0) {
+                container.innerHTML = '<div class="empty-state">데이터가 없습니다</div>';
+                return;
+            }
+            
+            container.innerHTML = Object.entries(data).map(([key, value]) => {
+                const percentage = Math.round(value / total * 100);
+                const emoji = containerId === 'stroke-distribution' ? getStrokeEmoji(key) : '';
+                
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <span style="font-weight: 600; color: var(--text-primary);">${emoji} ${key}</span>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 120px; height: 12px; background: var(--border-light); border-radius: 6px; overflow: hidden;">
+                                <div style="width: ${percentage}%; height: 100%; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 6px;"></div>
+                            </div>
+                            <span style="font-size: 14px; color: var(--text-secondary); min-width: 60px; font-weight: 600;">${value}회 (${percentage}%)</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 서버 상태 확인
+        function checkServerHealth() {
+            const statusDiv = document.getElementById('server-status');
+            showStatus('server-status', 'loading', '로컬 저장소 상태를 확인하는 중...');
+            
+            setTimeout(() => {
+                try {
+                    const records = LocalStorage.getRecords();
+                    const feedback = LocalStorage.getFeedback();
+                    
+                    showStatus('server-status', 'success', 
+                        `로컬 저장소 정상 작동 중\n저장된 기록: ${records.length}개\n피드백 수: ${Object.keys(feedback).length}개`);
+                    
+                } catch (error) {
+                    showStatus('server-status', 'error', '로컬 저장소 접근 실패\n브라우저 설정을 확인해주세요.');
+                }
+            }, 1000);
+        }
+
+        // 상태 메시지 표시
+        function showStatus(containerId, type, message) {
+            const container = document.getElementById(containerId);
+            const className = `status-${type}`;
+            
+            let content = message;
+            if (type === 'loading') {
+                content = `<div class="loading-spinner"></div> ${message}`;
+            }
+            
+            container.innerHTML = `<div class="${className} status-message" style="white-space: pre-line;">${content}</div>`;
+        }
+
+        // 날짜 포맷팅
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR', {
+                month: 'long',
+                day: 'numeric',
+                weekday: 'short'
+            });
+        }
+    </script>
+</body>
+</html>
