@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SwimRPE - 수영 강도 측정 앱 v1.0</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SwimRPE">
+    <meta name="theme-color" content="#0ea5e9">
+    <meta name="description" content="수영 강도를 과학적으로 측정하고 기록하는 PWA 앱">
+    
+    <!-- Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+    <link rel="manifest" href="manifest.json">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -56,7 +70,69 @@
             overflow-x: hidden;
         }
 
-        /* 헤더 */
+        /* PWA 설치 프롬프트 */
+        .install-prompt {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 1001;
+            display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .install-prompt.show {
+            display: block;
+        }
+
+        .install-prompt button {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-left: 12px;
+            cursor: pointer;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* 오프라인 상태 표시 */
+        .offline-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--warning);
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+            z-index: 1002;
+        }
+
+        .offline-indicator.show {
+            display: block;
+        }
+
+        /* 기존 스타일들 유지 */
         .app-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             padding: 60px 24px 40px;
@@ -751,6 +827,18 @@
     </style>
 </head>
 <body>
+    <!-- 오프라인 상태 표시 -->
+    <div class="offline-indicator" id="offline-indicator">
+        오프라인 모드 - 데이터는 로컬에 저장됩니다
+    </div>
+
+    <!-- PWA 설치 프롬프트 -->
+    <div class="install-prompt" id="install-prompt">
+        SwimRPE를 홈 화면에 설치하시겠습니까?
+        <button onclick="installApp()">설치</button>
+        <button onclick="dismissInstall()">나중에</button>
+    </div>
+
     <div class="app-container">
         <header class="app-header">
             <h1>SwimRPE</h1>
@@ -1072,6 +1160,10 @@
     </div>
 
     <script>
+        // PWA 관련 변수들
+        let deferredPrompt;
+        let isInstalled = false;
+        
         // 전역 변수
         let allRecords = [];
         let selectedRPE = null;
@@ -1090,7 +1182,7 @@
             { 
                 value: 1, 
                 title: "매우 가볍게", 
-                description: "물에 둥둥 떠있거나 매우 천천히 움직이는 정도", 
+                description: "물에 둥둥 떠 있거나 매우 천천히 움직이는 정도", 
                 swimmingTip: "물 적응이나 쿨다운 단계" 
             },
             { 
@@ -1149,6 +1241,88 @@
             }
         ];
 
+        // PWA 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // PWA 설치 프롬프트 처리
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallPrompt();
+        });
+
+        // 앱이 설치되었는지 확인
+        window.addEventListener('appinstalled', (evt) => {
+            isInstalled = true;
+            hideInstallPrompt();
+            console.log('SwimRPE PWA 설치 완료');
+        });
+
+        // 온라인/오프라인 상태 감지
+        window.addEventListener('online', () => {
+            hideOfflineIndicator();
+        });
+
+        window.addEventListener('offline', () => {
+            showOfflineIndicator();
+        });
+
+        // PWA 설치 프롬프트 표시
+        function showInstallPrompt() {
+            const prompt = document.getElementById('install-prompt');
+            // 이미 설치된 경우나 iOS Safari인 경우 표시하지 않음
+            if (!isInstalled && !isIOSSafari()) {
+                prompt.classList.add('show');
+            }
+        }
+
+        function hideInstallPrompt() {
+            document.getElementById('install-prompt').classList.remove('show');
+        }
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('사용자가 PWA 설치를 승인했습니다');
+                    }
+                    deferredPrompt = null;
+                    hideInstallPrompt();
+                });
+            }
+        }
+
+        function dismissInstall() {
+            hideInstallPrompt();
+            // 24시간 후 다시 표시
+            localStorage.setItem('installDismissed', Date.now() + 24 * 60 * 60 * 1000);
+        }
+
+        // iOS Safari 감지
+        function isIOSSafari() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        // 오프라인 상태 표시
+        function showOfflineIndicator() {
+            document.getElementById('offline-indicator').classList.add('show');
+        }
+
+        function hideOfflineIndicator() {
+            document.getElementById('offline-indicator').classList.remove('show');
+        }
+
         // 로컬 스토리지 관리
         class LocalStorage {
             static getRecords() {
@@ -1197,7 +1371,37 @@
             // 사용자 ID 설정 (임시)
             window.currentUserId = 1;
             
-            console.log('SwimRPE 앱이 초기화되었습니다.');
+            // 설치 프롬프트 확인
+            checkInstallPrompt();
+            
+            console.log('SwimRPE PWA가 초기화되었습니다.');
+        }
+
+        function checkInstallPrompt() {
+            const dismissed = localStorage.getItem('installDismissed');
+            if (dismissed && Date.now() < parseInt(dismissed)) {
+                return; // 아직 표시하지 않음
+            }
+            
+            // iOS에서는 다른 메시지 표시
+            if (isIOSSafari() && !isInstalled) {
+                setTimeout(() => {
+                    showIOSInstallGuide();
+                }, 3000);
+            }
+        }
+
+        function showIOSInstallGuide() {
+            const guide = document.createElement('div');
+            guide.className = 'install-prompt show';
+            guide.innerHTML = `
+                iOS에서 홈화면에 추가하려면:<br>
+                공유 버튼(⬆️) → "홈 화면에 추가" 선택
+                <button onclick="this.parentElement.remove()">확인</button>
+            `;
+            document.body.appendChild(guide);
+            
+            setTimeout(() => guide.remove(), 8000);
         }
 
         function createRPEScale() {
@@ -1434,14 +1638,14 @@
         // 영법 이모지 반환
         function getStrokeEmoji(exerciseType) {
             const emojiMap = {
-                '자유형': '',
-                '배영': '', 
-                '평영': '',
-                '접영': '',
-                '혼영': '',
-                '기타': ''
+                '자유형': '🏊',
+                '배영': '🏊‍♂️', 
+                '평영': '🏊‍♀️',
+                '접영': '🦋',
+                '혼영': '🏊',
+                '기타': '💪'
             };
-            return emojiMap[exerciseType] || '';
+            return emojiMap[exerciseType] || '🏊';
         }
 
         // 메모에서 세션 타입 추출
